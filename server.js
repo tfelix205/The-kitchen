@@ -18,7 +18,7 @@ app.use('/api/v1',menuRouter)
 
 
 // Routes
-app.use('/api/users', userRoutes);
+app.use('/api/risebite', userRoutes);
 
 // Default route
 app.get('/', (req, res) => {
