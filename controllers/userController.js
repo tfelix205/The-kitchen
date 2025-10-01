@@ -1,4 +1,5 @@
 const userModel = require('../models/userModel');
+const sgMail = require('@sendgrid/mail')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const {signupMail} = require('../utils/signup_mail');
@@ -34,15 +35,28 @@ exports.registerUser = async (req, res) => {
       
     });
 
-    const mailing = {
-        email: user.email,
-        subject: 'Your OTP Code',
-        html: signupMail(otp, firstName) 
-
-
-    }
-    await sendEmail(mailing);
-    console.log('OTP sent to email:', otp);
+    // const mailing = {
+    //     email: user.email,
+    //     subject: 'Your OTP Code',
+    //     html: signupMail({otp:user?.otp, firstName:user?.firstName}) 
+    // };
+    // await sendEmail(mailing);
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+ const msg = {
+  to: user.email, // Change to your recipient
+  from: process.env.email, // Change to your verified sender
+  subject: "verification code",
+  text: "welcome to risebite",
+  html: signupMail(otp, firstName),
+}
+sgMail
+  .send(msg)
+  .then(() => {
+    console.log('Email sent')
+  })
+  .catch((error) => {
+    console.error(error)
+  })
 
     await user.save();
 
@@ -106,6 +120,7 @@ exports.resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await userModel.findOne({ email: email.toLowerCase() });
+console.log(user);
 
     if (!user) {
       return res.status(404).json({
@@ -116,13 +131,24 @@ exports.resendOtp = async (req, res) => {
     const otp = Math.round(Math.random() * 1e6).toString().padStart(6, "0");
     Object.assign(user, {otp: otp, otpExpiry: Date.now() + 1000 * 120});
 
-      const mailing = {
-        email: user.email,
-        subject: 'Your OTP Code',
-        html: signupMail(otp, firstName)
-      };
+     sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+ const msg = {
+  to: user.email, // Change to your recipient
+  from: process.env.email, // Change to your verified sender
+  subject: "verification code",
+  text: "welcome to risebite",
+  html: signupMail(otp, user.firstName),
+}
+sgMail
+  .send(msg)
+  .then(() => {
+    console.log('Email sent')
+  })
+  .catch((error) => {
+    console.error(error)
+  })
 
-    await sendEmail(mailing);
+
     await user.save();
     res.status(200).json({
       message: 'Otp sent, kindly check your email'
@@ -135,7 +161,7 @@ exports.resendOtp = async (req, res) => {
 };
 
 
-exports. loginUser = async (req, res) => {
+exports.loginUser = async (req, res) => {
     try {
        
         const {email, password} = req.body;
@@ -150,7 +176,7 @@ exports. loginUser = async (req, res) => {
         }
 
         if (!checkUser.isVerified) {
-            return res.status(400).json(`please verify your email to proceed`)
+            return res.status(401).json(`please verify your email to proceed`)
         }
 
         if (!checkUser.isActive) {
