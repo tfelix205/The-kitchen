@@ -31,7 +31,7 @@ exports.registerUser = async (req, res) => {
       password,
       phone,
       otp: otp,
-      otpExpiry: Date.now() + 5 * 60 * 1000
+      otpExpiry: Date.now() + 30 * 60 * 1000
       
     });
     // const mailing = {
@@ -93,37 +93,45 @@ sgMail
 exports.verifyOtp = async (req, res) => {
   try {
     const { otp, email } = req.body;
-    const user = await userModel.findOne({ email: email.toLowerCase() });
+
+    // Validate inputs
+    if (!otp) {
+      return res.status(400).json({ message: ' OTP is required' });
+    }
+
+    // Find the user by email
+    const user = await userModel.findOne({ email: email.trim().toLowerCase() });
 
     if (!user) {
-      return res.status(404).json({
-        message: 'user not found'
-      })
-    };
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-    if (Date.now() > user.otpExpiredAt) {
-      return res.status(400).json({
-        message: 'OTP expired'
-      })
-    };
+    // Check if OTP is expired
+    if (!user.otpExpiry || new Date() > user.otpExpiry) {
+      return res.status(400).json({ message: 'OTP expired' });
+    }
 
+    // Check if OTP matches
     if (otp !== user.otp) {
-      return res.status(400).json({
-        message: 'Invalid otp'
-      })
-    };
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
 
-    Object.assign(user, { isVerified: true, otp: null, otpExpiry: null });
+    // Mark user as verified and clear OTP fields
+    user.isVerified = true;
+    user.otp = null;
+    user.otpExpiry = null;
+
     await user.save();
-    res.status(200).json({
-      message: 'User verified successfully'
-    })
+
+    return res.status(200).json({ message: 'User verified successfully' });
+
   } catch (error) {
-    res.status(500).json({
-      mesaage: 'Error verifying user' + error.message
-    })
+    return res.status(500).json({
+      message: 'Error verifying user: ' + error.message
+    });
   }
 };
+
 
 exports.resendOtp = async (req, res) => {
   try {
@@ -138,7 +146,7 @@ console.log(user);
     };
 
     const otp = Math.round(Math.random() * 1e6).toString().padStart(6, "0");
-    Object.assign(user, {otp: otp, otpExpiry: Date.now() + 1000 * 120});
+    Object.assign(user, {otp: otp, otpExpiry: Date.now() + 1000 * 60 * 30});
 
      sgMail.setApiKey(process.env.SENDGRID_API_KEY)
  const msg = {
@@ -157,13 +165,7 @@ sgMail
     console.error(error)
   })
 
-      const mailing = {
-        email: user.email,
-        subject: 'Your OTP Code',
-        html: signupMail(otp, firstName)
-      };
-
-    await sendEmail(mailing)
+      
     await user.save();
     res.status(200).json({
       message: 'Otp sent, kindly check your email'
@@ -314,4 +316,47 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body; 
+    const user = await userModel.findOne({ email: email.toLowerCase() });
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    } 
+    const otp = Math.floor(100000 + Math.random() * 1e6).toString().padStart(6, '0');
+    user.otp = otp;
+    user.otpExpiry = Date.now() + 30 * 60 * 1000; 
+    await user.save();
 
+    const mailing = {
+        email: user.email,
+        subject: 'Password Reset OTP',
+        html: `<p>Your OTP for password reset is: <strong>${otp}</strong></p><p>This OTP is valid for 30 minutes.</p>`
+    };
+    await sendEmail(mailing);
+    res.status(200).json({ message: 'OTP sent to email' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }   
+};
+
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await userModel.findById(req.user.id);
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    } 
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+        return res.status(400).json({ message: 'Current password is incorrect' });
+    } 
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }   
+};
