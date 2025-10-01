@@ -201,11 +201,9 @@ exports.loginUser = async (req, res) => {
 
         const token = jwt.sign({id:checkUser._id}, "otolo", {expiresIn: "24h"})
         
-            return res.status(400).json(`please verify your email to proceed`)
-        }
+           
 
-        
-        const token = jwt.sign({id:checkUser._id}, "otolo", {expiresIn: "2h"})
+       
 
        res.status(200).json({
         message: `Login successful`,
@@ -316,4 +314,4 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
-};
+
