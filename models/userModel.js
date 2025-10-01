@@ -47,11 +47,11 @@ const userSchema = new mongoose.Schema({
     },
     otp: {
     type: String,
-    select: false 
+     
     },
     otpExpiry: {
-    type: Date,
-    select: false 
+    type: Number
+    
     },
 
 }, {
