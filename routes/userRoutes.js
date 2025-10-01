@@ -1,12 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, verifyOtp, getAllUsers,suspendUser,reactivateUser, deleteUser} = require('../controller/userController');
+const { registerUser, loginUser, verifyOtp, getAllUsers,suspendUser,reactivateUser, deleteUser, updateUserProfile, getUserProfile, resendOtp} = require('../controllers/userController');
 
 
 //user routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/verify-otp', verifyOtp);
+router.put('/update-profile', updateUserProfile);
+router.get('/profile', getUserProfile);
+router.post('/resend-otp', resendOtp);
+
 
 
 
