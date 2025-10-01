@@ -7,6 +7,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const dbURI = process.env.DB_URI;
 const userRoutes = require('./routes/userRoutes.js');
+const orderRoutes = require('./routes/orderRoutes.js');
 
 
 
@@ -19,6 +20,8 @@ app.use('/api/v1',menuRouter)
 
 // Routes
 app.use('/api/risebite', userRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Default route
 app.get('/', (req, res) => {

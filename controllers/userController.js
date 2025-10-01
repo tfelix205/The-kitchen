@@ -1,5 +1,5 @@
 const userModel = require('../models/userModel');
-const sgMail = require('@sendgrid/mail')
+const sgMail = require('@sendgrid/mail');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const {signupMail} = require('../utils/signup_mail');
@@ -34,7 +34,6 @@ exports.registerUser = async (req, res) => {
       otpExpiry: Date.now() + 5 * 60 * 1000
       
     });
-
     // const mailing = {
     //     email: user.email,
     //     subject: 'Your OTP Code',
@@ -57,6 +56,15 @@ sgMail
   .catch((error) => {
     console.error(error)
   })
+    const mailing = {
+        email: user.email,
+        subject: 'Your OTP Code',
+        html: signupMail(otp, firstName) 
+
+
+    }
+    await sendEmail(mailing);
+    console.log('OTP sent to email:', otp);
 
     await user.save();
 
@@ -79,6 +87,7 @@ sgMail
         res.status(500).json({ message: 'Registration failed: ', error: error.message });
     }
 };
+
 
 
 exports.verifyOtp = async (req, res) => {
@@ -148,7 +157,13 @@ sgMail
     console.error(error)
   })
 
+      const mailing = {
+        email: user.email,
+        subject: 'Your OTP Code',
+        html: signupMail(otp, firstName)
+      };
 
+    await sendEmail(mailing)
     await user.save();
     res.status(200).json({
       message: 'Otp sent, kindly check your email'
@@ -185,6 +200,12 @@ exports.loginUser = async (req, res) => {
 
 
         const token = jwt.sign({id:checkUser._id}, "otolo", {expiresIn: "24h"})
+        
+            return res.status(400).json(`please verify your email to proceed`)
+        }
+
+        
+        const token = jwt.sign({id:checkUser._id}, "otolo", {expiresIn: "2h"})
 
        res.status(200).json({
         message: `Login successful`,
@@ -295,6 +316,4 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
-
-
-
+};
