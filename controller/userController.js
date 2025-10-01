@@ -67,7 +67,7 @@ exports.registerUser = async (req, res) => {
 };
 
 
-exports.verify = async (req, res) => {
+exports.verifyOtp = async (req, res) => {
   try {
     const { otp, email } = req.body;
     const user = await userModel.findOne({ email: email.toLowerCase() });
@@ -135,7 +135,7 @@ exports.resendOtp = async (req, res) => {
 };
 
 
-login = async (req, res) => {
+exports. loginUser = async (req, res) => {
     try {
        
         const {email, password} = req.body;
@@ -153,8 +153,12 @@ login = async (req, res) => {
             return res.status(400).json(`please verify your email to proceed`)
         }
 
-        
-        const token = jwt.sign({id:checkUser._id}, "otolo", {expiresIn: "2h"})
+        if (!checkUser.isActive) {
+            return res.status(400).json(`your account has been suspended \n please contact the customer support`)
+        }
+
+
+        const token = jwt.sign({id:checkUser._id}, "otolo", {expiresIn: "24h"})
 
        res.status(200).json({
         message: `Login successful`,
@@ -169,3 +173,102 @@ login = async (req, res) => {
         }) 
     }
 };
+
+
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await userModel.find().select('-password -otp -otpExpiry');
+    if (users.length === 0) {
+        return res.status(200).json({ message: 'No User Registered' });
+    }
+    res.status(200).json({ users });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+exports.getUserProfile = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user.id).select('-password -otp -otpExpiry'); 
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' }); 
+    }
+    res.status(200).json({ user });
+  }
+    catch (error) { 
+    res.status(500).json({ message: 'Server error', error: error.message });
+  } 
+};
+
+
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, phone } = req.body;    
+    const user = await userModel.findById(req.user.id);
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.phone = phone || user.phone;    
+    await user.save();
+    res.status(200).json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  } 
+};
+
+
+exports.suspendUser = async (req, res) => {
+  try {
+   const User = await userModel.findByIdAndUpdate(
+      req.params.id,
+      { isActive: false },
+      { new: true } 
+    );
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+    user.isActive = false;
+    await user.save();
+    res.status(200).json({ message: 'User suspended successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.reactivateUser = async (req, res) => {
+  try {
+    const User = await userModel.findByIdAndUpdate(
+      req.params.id,
+      { isActive: true },
+      { new: true } 
+    );
+
+    if (!User) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'User activated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await userModel.findByIdAndDelete(req.params.id);
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
+
+
