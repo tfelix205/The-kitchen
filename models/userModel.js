@@ -28,11 +28,17 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    trim: true
+    trim: true,
+    max: [11, 'Phone number cannot exceed 11 digits']
+    
   },
   isActive: {
     type: Boolean,
     default: true
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
   },
     role: {
     type: String,
