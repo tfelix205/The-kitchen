@@ -20,7 +20,7 @@ app.use('/api/v1',menuRouter)
 
 // Routes
 app.use('/api/risebite', userRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/menu', menuRouter);
 app.use('/api/orders', orderRoutes);
 
 // Default route

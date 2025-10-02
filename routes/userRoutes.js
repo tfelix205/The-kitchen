@@ -9,7 +9,7 @@ const { registerValidator, verifyValidator, resendValidator, updateProfileValida
 router.post('/register',registerValidator, registerUser);
 router.post('/verify-otp',verifyValidator, verifyOtp);
 router.post('/login',loginValidator, loginUser);
-router.post('/dashboard', dashboard )
+router.get('/dashboard', dashboard )
 router.put('/update-profile',updateProfileValidator, updateUserProfile);
 router.get('/profile', getUserProfile);
 router.post('/resend-otp',resendValidator, resendOtp);
