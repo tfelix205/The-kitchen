@@ -112,10 +112,7 @@ exports.verifyOtp = async (req, res) => {
     }
 
 
-  console.log("check: ", otp, user.otp);
   
-
-
     // Check if OTP matches
     if (otp !== user.otp) {
       return res.status(400).json({ message: 'Invalid OTP' });
@@ -224,6 +221,20 @@ exports.loginUser = async (req, res) => {
             error: error.message
         }) 
     }
+};
+
+
+exports.getuserById = async (req, res) => {
+  try {
+    const userId = req.params.id; 
+    const user = await userModel.findById(userId).select('-password -otp -otpExpiry');
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  } 
 };
 
 

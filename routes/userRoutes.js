@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { registerUser, verifyOtp, getAllUsers,suspendUser,reactivateUser, deleteUser, updateUserProfile, getUserProfile, resendOtp, loginUser, forgotPassword, changePassword} = require('../controllers/userController');
+const { registerUser, verifyOtp, getAllUsers,suspendUser,reactivateUser, deleteUser, updateUserProfile, getUserProfile, resendOtp, loginUser, forgotPassword, changePassword, getuserById} = require('../controllers/userController');
 const { registerValidator, verifyValidator, resendValidator, updateProfileValidator, loginValidator } = require('../middleware/validator');
 
 
@@ -19,6 +19,7 @@ router.put('/change-password',loginValidator, changePassword);
 
 
 //admin route
+router.get('/user/:id', getuserById);
 router.get('/all-users', getAllUsers);
 router.put('/suspend-user/:id', suspendUser);
 router.put('/reactivate-user/:id', reactivateUser); 
