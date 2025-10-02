@@ -27,6 +27,8 @@ const breakfastRouter = require("./routes/breakfastRouter");
 const app = express();
 const port = process.env.PORT || 3000;
 const dbURI = process.env.DB_URI;
+const userRoutes = require('./routes/userRoutes.js');
+
 
 
 // Middleware
@@ -36,9 +38,19 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1", breakfastRouter);
 
 
+// Routes
+app.use('/api/risebite', userRoutes);
+
+// Default route
+app.get('/', (req, res) => {
+    res.send('Welcome to Risebite API');
+});
+
+
+
 // Connect to MongoDB
 mongoose.connect(dbURI)
-    .then(() => console.log('MongoDB connected'),
+    .then(() => console.log('database  connected'),
         app.listen(port, () => {
             console.log(`Server running on port ${port}`);
         }))
