@@ -224,6 +224,31 @@ exports.loginUser = async (req, res) => {
 };
 
 
+exports.dashboard = async (req, res) => { 
+    try {
+      let checktoken = req.header.authorization;
+      if (!checktoken) {
+        return res.status(401).json({
+          message: 'Access denied. please login.'
+        });
+      }
+      checktoken = checktoken.split(' ')[1];
+
+      const decoded = jwt.verify(checktoken, "otolo");
+      const userId = decoded.id;
+      const user = await userModel.findById(userId).select('-password -otp -otpExpiry');
+      res.status(200).json({
+        message: `welcome to your dashboard ${user.firstName}`,
+        data: user
+      })
+    } catch (error) {
+       res.status(500).json({
+            message: `internal server error`,
+            error: error.message
+        }) 
+    }
+  };
+        
 exports.getuserById = async (req, res) => {
   try {
     const userId = req.params.id; 
