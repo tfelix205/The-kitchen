@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-const { registerUser, verifyOtp, getAllUsers,suspendUser,reactivateUser, deleteUser, updateUserProfile, getUserProfile, resendOtp, loginUser, forgotPassword, changePassword, getuserById} = require('../controllers/userController');
+const { registerUser, verifyOtp, getAllUsers,suspendUser,reactivateUser, deleteUser, updateUserProfile, getUserProfile, resendOtp, loginUser, forgotPassword, changePassword, getuserById, dashboard} = require('../controllers/userController');
 const { registerValidator, verifyValidator, resendValidator, updateProfileValidator, loginValidator } = require('../middleware/validator');
 
 
 //user routes
 router.post('/register',registerValidator, registerUser);
-router.post('/login',loginValidator, loginUser);
 router.post('/verify-otp',verifyValidator, verifyOtp);
+router.post('/login',loginValidator, loginUser);
+router.post('/dashboard', dashboard )
 router.put('/update-profile',updateProfileValidator, updateUserProfile);
 router.get('/profile', getUserProfile);
 router.post('/resend-otp',resendValidator, resendOtp);
