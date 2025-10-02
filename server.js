@@ -16,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/v1',menuRouter)
+app.use("/uploads", express.static("uploads"));
 
 
 // Routes

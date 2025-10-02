@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 
+
 const { registerUser, verifyOtp, getAllUsers,suspendUser,reactivateUser, deleteUser, updateUserProfile, getUserProfile, resendOtp, loginUser, forgotPassword, changePassword, getuserById, dashboard} = require('../controllers/userController');
 const { registerValidator, verifyValidator, resendValidator, updateProfileValidator, loginValidator } = require('../middleware/validator');
+const upload = require('../middleware/multer');
 
 
 //user routes
@@ -25,6 +27,18 @@ router.get('/all-users', getAllUsers);
 router.put('/suspend-user/:id', suspendUser);
 router.put('/reactivate-user/:id', reactivateUser); 
 router.delete('/delete-user/:id', deleteUser);
+
+// POST route to upload breakfast image
+router.post("/upload", upload.single("breakfastImage"), (req, res) => {
+  try {
+    res.json({
+      message: "Breakfast image uploaded successfully!",
+      file: req.file,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
 
 
