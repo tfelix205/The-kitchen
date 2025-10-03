@@ -20,12 +20,12 @@ exports.initializePayment = async (req, res) => {
 
     if (!menu) {
       return res.status(404).json({
-        message: 'Product not found'
+        message: 'Menu not found'
       })
     };
 
     const paymentInfo = {
-      amount: product.price,
+      amount: menu.price,
       currency: 'NGN',
       reference: ref,
       customer: {
