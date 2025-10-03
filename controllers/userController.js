@@ -22,7 +22,7 @@ exports.registerUser = async (req, res) => {
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 1e6).toString().padStart(6, '0');
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const user = new userModel({
       firstName,
@@ -226,15 +226,13 @@ exports.loginUser = async (req, res) => {
 
 exports.dashboard = async (req, res) => { 
     try {
-      let checktoken = req.header.authorization;
+      const checktoken = req.headers.authorization?.split(" ")[1];
       if (!checktoken) {
         return res.status(401).json({
           message: 'Access denied. please login.'
         });
       }
-      checktoken = checktoken.split(' ')[1];
-
-      const decoded = jwt.verify(checktoken, "otolo");
+            const decoded = jwt.verify(checktoken, "otolo");
       const userId = decoded.id;
       const user = await userModel.findById(userId).select('-password -otp -otpExpiry');
       res.status(200).json({

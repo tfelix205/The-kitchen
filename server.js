@@ -8,6 +8,7 @@ const port = process.env.PORT || 3000;
 const dbURI = process.env.DB_URI;
 const userRoutes = require('./routes/userRoutes.js');
 const orderRoutes = require('./routes/orderRoutes.js');
+const paymentRoutes = require('./routes/paymentRoutes.js');
 
 
 
@@ -17,10 +18,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
+
 // Routes
 app.use('/api/risebite', userRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/menu', menuRouter);
 app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Default route
 app.get('/', (req, res) => {

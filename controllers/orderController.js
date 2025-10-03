@@ -1,54 +1,68 @@
 const orderModel = require('../models/orderModel');
 const userModel = require('../models/userModel');
 
-// Create a new order
-exports.createOrder = async (req, res) => {
+exports.getUserOrderHistory = async (req, res) => {
   try {
-    const { items, totalAmount } = req.body;
+    const { userId } = req.params;
 
-    const userId = await userModel.findById(req.user._id);
-    if(!userId) {
-      return res.status(401).json({ message: 'Can not access order history' });
+    // Fetch all orders of that user
+    const orders = await orderModel.find({ userId })
+      .populate('items.productId', 'name price')
+      .populate('userId', 'name email')
+      .sort({ createdAt: -1 });
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ message: 'No order history found' });
     }
-    if(!items || items.length === 0) {
-      return res.status(400).json({ message: 'Invalid order data' });
-    }
 
-    const newOrder = new orderModel({
-      items,
-      totalAmount,
-      userId,
-      status: 'pending'
-    });
+   
+    const pending = orders.filter(order => order.status === 'pending');
+    const successful = orders.filter(order => order.status === 'successful');
+    const failed = orders.filter(order => order.status === 'failed');
 
-    await newOrder.save();
-    res.status(201).json({ 
-        message: 'Order created successfully', 
-        order: newOrder 
-    });
-  } catch (error) {
-    res.status(500).json({ 
-        message: 'Internal server error',
-        error: error.message
-    });
-  }
-};
+    const past = successful.slice(1); 
 
-exports.getAllOrders = async (req, res) => {
-  try {
-    const orders = await orderModel.find().populate('userId', 'name email');
     res.status(200).json({
-      orders: orders
+      message: 'Order history fetched successfully',
+      history: {
+        pending,
+        successful,
+        failed,
+        past
+      }
     });
+
   } catch (error) {
     res.status(500).json({
-         message: 'Internal server error',
-         error: error.message
+      message: 'Internal server error',
+      error: error.message
     });
   }
 };
 
 
+
+//   try {
+//     const userId = req.user?._id;
+//     const { status } = req.query; // e.g., ?status=pending or ?status=successful
+//     if (!userId) {
+//       return res.status(401).json({ message: 'Unauthorized: User not found' });
+//     }
+//     const filter = { userId };
+//     if (status && ['pending', 'successful', 'failed'].includes(status)) {
+//       filter.status = status;
+//     }
+//     const orders = await orderModel.find(filter)
+//       .populate('userId', 'name email')
+//       .populate('items.productId', 'name price');
+//     res.status(200).json({ orders });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: 'Internal server error',
+//       error: error.message
+//     });
+//   }
+// };
 exports.getOrderById = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -77,7 +91,7 @@ exports.updateOrderStatus = async (req, res) => {
     }
     const order = await orderModel.findByIdAndUpdate(
       id,
-      { status },
+      { status: status },
       { new: true }
     );
     if (!order) {
@@ -133,3 +147,5 @@ exports.deleteOrder = async (req, res) => {
           });
   }
 };
+
+
