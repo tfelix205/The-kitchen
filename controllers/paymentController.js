@@ -1,6 +1,6 @@
-const userModel = require('../models/user');
-const menuModel = require('../models/product');
-const paymentModel = require('../models/payment');
+const userModel = require('../models/userModel');
+const menuModel = require('../models/menuModels');
+const paymentModel = require('../models/paymentModel');
 const axios = require('axios');
 const otpGen = require('otp-generator');
 
